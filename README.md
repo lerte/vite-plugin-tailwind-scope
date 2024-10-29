@@ -1,50 +1,91 @@
-# React + TypeScript + Vite
+# vite-plugin-tailwind-scope
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Encapsulate and scope your TailwindCSS styles to your library and prevent them affecting styles outside.
 
-Currently, two official plugins are available:
+Love using TailwindCSS? Other people also love using TailwindCSS? Trying to mix them together? Usually this leads to problems as the tailwind classes such as `flex`, `bg-red-500` will clash and change specificity.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+**Potential solutions**:
 
-## Expanding the ESLint configuration
+- A solution would be to [prefix your `TailwindCSS` styles in your libraries](https://stackoverflow.com/a/63770585), for example `my-lib-flex`, `my-lib-bg-red-500`, but this simply isn't good enough. The solution breaks down when there are multiple libraries using `TailwindCSS`. You would need a `prefix-` for each library. Unnecessary mental load.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- Another solution would be to [make the parent app important](https://stackoverflow.com/a/65907678). But this is an anti-pattern, and is a leaky abstraction. It is not feasible to tell all the consumers of your library to do this as a pre-requisite.
 
-- Configure the top-level `parserOptions` property like this:
+## Installation
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm i vite-plugin-tailwind-scope -D
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Usage
+
+This plugin use tailwindcss and postcss process
+
+Add the `scope` plugin into the `plugins` list in your `vite.config.ts`:
+
+```ts
+import { scope } from "vite-plugin-tailwind-scope";
+export default defineConfig({
+  ...
+  plugins: [
+    ...
+    scope()
+    ...
+  ],
+  ...
+});
+```
+
+Add the `css` function in your Component file, for example `Button.tsx`
+
+```tsx
+import { css } from "vite-plugin-tailwind-scope/css";
+import styles from "./styles/Button.module.css";
+
+const Button = () => {
+  return <button className={css(styles)`text-white bg-red-500`}>click</button>;
+};
+```
+
+Inspect element from browser, you will see `text-white` will transform to `_text-white_14u4s_26`,
+and `bg-red-500` will also transform to `_bg-red-500_14u4s_14`, that is the css module works.
+
+### Options
+
+```ts
+{
+  dest: string; // generate module.css to where, default is relative to Component file
+}
+```
+
+### How does it work?
+
+Base on `Vite` plugin's hook `handleHotUpdate`.
+Everytime file changes, trigger handleHotUpdate,
+get the file contents from this hook function.
+
+As we know, tailwindcss is a postcss plugin.
+use postcss with tailwindcss, generate css code, then write to \*.module.css file.
 
 ```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+postcss([
+  tailwindcss({
+    content: [
+      {
+        raw: content,
+        extension: "jsx",
+      },
+    ],
+  }),
+])
+  .process("@tailwind utilities;")
+  .then(({ css }) => {
+    const { filePath, content } = generateCssModule(file, css, options);
+  });
 ```
+
+On the component file side.
+import the generated .module.css file.
+use the `css` function from this plugin.
+Inside this function, will use css module className as result.
+
+So we can using tailwindcss utility name benefiting from tailwindcss and also scope styles with css module while writing a react component.
