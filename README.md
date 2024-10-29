@@ -18,7 +18,7 @@ npm i vite-plugin-tailwind-scope -D
 
 ## Usage
 
-This plugin use tailwindcss and postcss process
+This plugin use tailwindcss and postcss process className to utilities style,then auto generate a .module.css file as css module.
 
 Add the `scope` plugin into the `plugins` list in your `vite.config.ts`:
 
@@ -39,7 +39,7 @@ Add the `css` function in your Component file, for example `Button.tsx`
 
 ```tsx
 import { css } from "vite-plugin-tailwind-scope/css";
-import styles from "./styles/Button.module.css";
+import styles from "./Button.module.css";
 
 const Button = () => {
   return <button className={css(styles)`text-white bg-red-500`}>click</button>;
