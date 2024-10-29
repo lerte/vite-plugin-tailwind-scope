@@ -1,0 +1,51 @@
+{
+  "name": "vite-plugin-tailwind-scope",
+  "description": "scope tailwindcss class name with css module, suitable for component library",
+  "license": "MIT",
+  "version": "0.0.1",
+  "author": "Lerte Smith",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "ui",
+    "scope",
+    "react",
+    "css module",
+    "tailwindcss",
+    "component library"
+  ],
+  "repository": {
+    "type": "git",
+    "directory": "vite-plugin-tailwind-scope",
+    "url": "git+https://github.com/lerte/vite-plugin-tailwind-scope.git"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./css": {
+      "import": "./dist/css.js",
+      "types": "./dist/css.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14"
+  },
+  "devDependencies": {
+    "clsx": "^2.1.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.9"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.com"
+  }
+}
